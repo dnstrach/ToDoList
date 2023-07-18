@@ -10,10 +10,15 @@ import UIKit
 class ToDoListTableViewController: UITableViewController {
 
     var toDoItems = ["grocery store", "lashes", "build app", "laundry"]
+    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        if let items = defaults.array(forKey: "ToDoListsArray") as? [String] {
+            toDoItems = items
+        }
+        
         setupNavBar()
     }
     
@@ -29,6 +34,8 @@ class ToDoListTableViewController: UITableViewController {
             print(textField.text ?? "")
             
             self.toDoItems.append(textField.text ?? "")
+            
+            self.defaults.set(self.toDoItems, forKey: "ToDoListsArray")
             
             self.tableView.reloadData()
             
