@@ -9,15 +9,41 @@ import UIKit
 
 class ToDoListTableViewController: UITableViewController {
 
-    var toDoItems = ["grocery store", "lashes", "build app", "laundry"]
+    var toDoItems = [Item]()
+    //var toDoItems = ["grocery store", "lashes", "build app", "laundry"]
+    //user defaults is a dictionary of key value pairs. UserDefaults.plist can store limited amount of data types...best used for one key-value pair
     let defaults = UserDefaults.standard
+    //data store in users document folder as customized .plist...model must be encodable
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //print(dataFilePath)
+      
+        
+//        let newItem = Item()
+//        newItem.name = "udemy"
+//        toDoItems.append(newItem)
+//
+//        let newItem2 = Item()
+//        newItem2.name = "gym"
+//        toDoItems.append(newItem2)
+//
+//        let newItem3 = Item()
+//        newItem3.name = "buy card"
+//        toDoItems.append(newItem3)
+        
+        loadToDoItems()
+        
 
-        if let items = defaults.array(forKey: "ToDoListsArray") as? [String] {
-            toDoItems = items
-        }
+//        if let items = defaults.array(forKey: "ToDoListsArray") as? [String] {
+//            toDoItems = items
+//        }
+        
+//        if let items = defaults.array(forKey: "ToDoListsArray") as? [Item] {
+//            toDoItems = items
+//        }
         
         setupNavBar()
     }
@@ -31,11 +57,18 @@ class ToDoListTableViewController: UITableViewController {
         let actionResponse = UIAlertAction(title: "Add Item", style: .default) { action in
             
             //testing -- data from alert pop up
-            print(textField.text ?? "")
+            //print(textField.text ?? "")
             
-            self.toDoItems.append(textField.text ?? "")
+            //self.toDoItems.append(textField.text ?? "")
             
-            self.defaults.set(self.toDoItems, forKey: "ToDoListsArray")
+            let newItem = Item()
+            newItem.name = textField.text ?? "New Item"
+            
+            self.toDoItems.append(newItem)
+            
+            //self.defaults.set(self.toDoItems, forKey: "ToDoListsArray")
+            
+            self.saveToDoItems()
             
             self.tableView.reloadData()
             
@@ -49,6 +82,30 @@ class ToDoListTableViewController: UITableViewController {
         alertPopup.addAction(actionResponse)
         
         present(alertPopup, animated: true, completion: nil)
+    }
+    
+    func saveToDoItems() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(toDoItems)
+            try data.write(to: dataFilePath!)
+        } catch {
+           print("Error encoding item array, \(error)")
+        }
+        
+        self.tableView.reloadData()
+    }
+    
+    func loadToDoItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                toDoItems = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding items array, \(error)")
+            }
+        }
     }
     
     func setupNavBar() {
@@ -75,8 +132,18 @@ class ToDoListTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        
+        let toDoItem = toDoItems[indexPath.row]
 
-        cell.textLabel?.text = toDoItems[indexPath.row]
+        cell.textLabel?.text = toDoItem.name
+        
+        cell.accessoryType = toDoItem.done == true ? .checkmark : .none
+        
+//        if toDoItem.done == true {
+//            cell.accessoryType = .checkmark
+//        } else {
+//            cell.accessoryType = .none
+//        }
         
         return cell
     }
@@ -84,59 +151,26 @@ class ToDoListTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print(toDoItems[indexPath.row])
         
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+//        if toDoItems[indexPath.row].done == false {
+//            toDoItems[indexPath.row].done = true
+//        } else {
+//            toDoItems[indexPath.row].done = false
+//        }
+        
+        toDoItems[indexPath.row].done = !toDoItems[indexPath.row].done
+        
+//        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+//        } else {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+//        }
+        
+        self.saveToDoItems()
+        
+        //deleted because used in saveToDoItems()
+        //tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
-
-    
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
