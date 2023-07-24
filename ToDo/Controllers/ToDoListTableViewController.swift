@@ -6,20 +6,29 @@
 //
 
 import UIKit
+import CoreData
 
 class ToDoListTableViewController: UITableViewController {
-
-    var toDoItems = [Item]()
+    
+    @IBOutlet var itemsTableView: UITableView!
+    
+    //var toDoItems = [Item]()
+    var toDoItems = [ToDoItem]()
     //var toDoItems = ["grocery store", "lashes", "build app", "laundry"]
     //user defaults is a dictionary of key value pairs. UserDefaults.plist can store limited amount of data types...best used for one key-value pair
     let defaults = UserDefaults.standard
     //data store in users document folder as customized .plist...model must be encodable
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //print(dataFilePath)
+        itemsTableView.reloadData()
+        
+        //shows file path where items are being saved
+        print(dataFilePath)
       
         
 //        let newItem = Item()
@@ -48,6 +57,7 @@ class ToDoListTableViewController: UITableViewController {
         setupNavBar()
     }
     
+    //MARK: - Create
     @IBAction func addButtonPressed(_ sender: Any) {
         
         var textField = UITextField()
@@ -61,8 +71,11 @@ class ToDoListTableViewController: UITableViewController {
             
             //self.toDoItems.append(textField.text ?? "")
             
-            let newItem = Item()
+            let newItem = ToDoItem(context: self.context)
+            
+            //let newItem = Item()
             newItem.name = textField.text ?? "New Item"
+            newItem.done = false
             
             self.toDoItems.append(newItem)
             
@@ -84,27 +97,43 @@ class ToDoListTableViewController: UITableViewController {
         present(alertPopup, animated: true, completion: nil)
     }
     
+    func deleteItem(toDoItem: ToDoItem) {
+        context.delete(toDoItem)
+        saveToDoItems()
+    }
+    
     func saveToDoItems() {
-        let encoder = PropertyListEncoder()
+        //let encoder = PropertyListEncoder()
         
         do {
-            let data = try encoder.encode(toDoItems)
-            try data.write(to: dataFilePath!)
+            try context.save()
+            
+//            let data = try encoder.encode(toDoItems)
+//            try data.write(to: dataFilePath!)
         } catch {
-           print("Error encoding item array, \(error)")
+            print("Error saving context: \(error)")
+            
+//           print("Error encoding item array, \(error)")
         }
         
         self.tableView.reloadData()
     }
     
     func loadToDoItems() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                toDoItems = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding items array, \(error)")
-            }
+//        if let data = try? Data(contentsOf: dataFilePath!) {
+//            let decoder = PropertyListDecoder()
+//            do {
+//                toDoItems = try decoder.decode([Item].self, from: data)
+//            } catch {
+//                print("Error decoding items array, \(error)")
+//            }
+//        }
+        
+        let request: NSFetchRequest<ToDoItem> = ToDoItem.fetchRequest()
+        do {
+        toDoItems = try context.fetch(request)
+        } catch {
+            print("Error loading/fetching items from context: \(error)")
         }
     }
     
@@ -171,6 +200,19 @@ class ToDoListTableViewController: UITableViewController {
         //tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        
+        if editingStyle == .delete {
+            //order matters must remove items from core data first or else will affect index numbers of array from cells
+            deleteItem(toDoItem: toDoItems[indexPath.row])
+        
+            toDoItems.remove(at: indexPath.row)
+            
+            itemsTableView.deleteRows(at: [indexPath], with: .automatic)
+            
+        }
     }
 
 }

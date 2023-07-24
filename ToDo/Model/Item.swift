@@ -7,7 +7,8 @@
 
 import Foundation
 
-class Item: Codable {
-    var name: String = ""
-    var done: Bool = false
-}
+//replaced with CoreData
+//class Item: Codable {
+//    var name: String = ""
+//    var done: Bool = false
+//}
