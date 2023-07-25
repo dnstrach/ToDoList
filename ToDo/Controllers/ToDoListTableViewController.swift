@@ -10,25 +10,30 @@ import CoreData
 
 class ToDoListTableViewController: UITableViewController {
     
-    @IBOutlet var itemsTableView: UITableView!
-    
+    var selectedCategory: Category? {
+        didSet {
+            loadToDoItems()
+            print(toDoItems)
+        }
+    }
     //var toDoItems = [Item]()
     var toDoItems = [ToDoItem]()
     //var toDoItems = ["grocery store", "lashes", "build app", "laundry"]
     //user defaults is a dictionary of key value pairs. UserDefaults.plist can store limited amount of data types...best used for one key-value pair
-    let defaults = UserDefaults.standard
+    //let defaults = UserDefaults.standard
     //data store in users document folder as customized .plist...model must be encodable
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        itemsTableView.reloadData()
+        //itemsTableView.reloadData()
         
         //shows file path where items are being saved
-        print(dataFilePath)
+        //print(dataFilePath)
       
         
 //        let newItem = Item()
@@ -76,6 +81,8 @@ class ToDoListTableViewController: UITableViewController {
             //let newItem = Item()
             newItem.name = textField.text ?? "New Item"
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
+            newItem.title = self.selectedCategory?.title
             
             self.toDoItems.append(newItem)
             
@@ -119,7 +126,7 @@ class ToDoListTableViewController: UITableViewController {
         self.tableView.reloadData()
     }
     
-    func loadToDoItems() {
+    func loadToDoItems(with request: NSFetchRequest<ToDoItem> = ToDoItem.fetchRequest(), predicate: NSPredicate? = nil) {
 //        if let data = try? Data(contentsOf: dataFilePath!) {
 //            let decoder = PropertyListDecoder()
 //            do {
@@ -129,12 +136,27 @@ class ToDoListTableViewController: UITableViewController {
 //            }
 //        }
         
-        let request: NSFetchRequest<ToDoItem> = ToDoItem.fetchRequest()
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.title MATCHES %@", selectedCategory!.title!)
+        
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
+        
+//        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, predicate])
+        
+        //let request: NSFetchRequest<ToDoItem> = ToDoItem.fetchRequest()
         do {
         toDoItems = try context.fetch(request)
         } catch {
             print("Error loading/fetching items from context: \(error)")
         }
+        
+        tableView.reloadData()
     }
     
     func setupNavBar() {
@@ -210,9 +232,47 @@ class ToDoListTableViewController: UITableViewController {
         
             toDoItems.remove(at: indexPath.row)
             
-            itemsTableView.deleteRows(at: [indexPath], with: .automatic)
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
             
         }
     }
 
+}
+
+//MARK: - Search Bar Methods
+extension ToDoListTableViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request :NSFetchRequest<ToDoItem> = ToDoItem.fetchRequest()
+        
+        //testing
+        //print(searchBar.text!)
+        
+        //to query CoreData use NSPredicate
+        //[cd] - case insensitivity
+        let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchBar.text!)
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        
+//        do {
+//        toDoItems = try context.fetch(request)
+//        } catch {
+//            print("Error loading/fetching items from context: \(error)")
+//        }
+//
+//        tableView.reloadData()
+        
+        loadToDoItems(with: request, predicate: predicate)
+        
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadToDoItems()
+
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
 }

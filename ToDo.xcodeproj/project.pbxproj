@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D8597FD92A6B093800722E6D /* ToDoManager.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D8597FD72A6B093800722E6D /* ToDoManager.xcdatamodeld */; };
+		D8597FFF2A6F500300722E6D /* CategoryTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8597FFE2A6F500300722E6D /* CategoryTableViewController.swift */; };
 		D85AEF782A610CBB0057F5B2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85AEF772A610CBB0057F5B2 /* AppDelegate.swift */; };
 		D85AEF7A2A610CBB0057F5B2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85AEF792A610CBB0057F5B2 /* SceneDelegate.swift */; };
 		D85AEF7F2A610CBB0057F5B2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D85AEF7D2A610CBB0057F5B2 /* Main.storyboard */; };
@@ -19,6 +20,7 @@
 
 /* Begin PBXFileReference section */
 		D8597FD82A6B093800722E6D /* ToDoManager.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ToDoManager.xcdatamodel; sourceTree = "<group>"; };
+		D8597FFE2A6F500300722E6D /* CategoryTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTableViewController.swift; sourceTree = "<group>"; };
 		D85AEF742A610CBB0057F5B2 /* ToDo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToDo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85AEF772A610CBB0057F5B2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D85AEF792A610CBB0057F5B2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 		D85AEF8B2A610DEF0057F5B2 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				D8597FFE2A6F500300722E6D /* CategoryTableViewController.swift */,
 				D85AEF8E2A610E2E0057F5B2 /* ToDoListTableViewController.swift */,
 			);
 			path = Controllers;
@@ -165,6 +168,7 @@
 				D85AEF782A610CBB0057F5B2 /* AppDelegate.swift in Sources */,
 				D85AEF7A2A610CBB0057F5B2 /* SceneDelegate.swift in Sources */,
 				D85AEF8F2A610E2E0057F5B2 /* ToDoListTableViewController.swift in Sources */,
+				D8597FFF2A6F500300722E6D /* CategoryTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
