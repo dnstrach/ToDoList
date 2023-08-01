@@ -6,12 +6,17 @@
 //
 
 import UIKit
-import CoreData
+//import CoreData
+import RealmSwift
 
 class CategoryTableViewController: UITableViewController {
 
-    var categories = [Category]()
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let realm = try! Realm()
+
+    //var categories = [Category]()
+    var categories: Results<Category>?
+    
+    //let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,12 +34,16 @@ class CategoryTableViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             
-            let newCategory = Category(context: self.context)
-            newCategory.title = textField.text ?? "New Category"
+//            let newCategory = Category(context: self.context)
+//            newCategory.title = textField.text ?? "New Category"
             
-            self.categories.append(newCategory)
+            let newCategory = Category()
+            newCategory.name = textField.text!
             
-            self.saveCategories()
+            //no need to append new objects because realm container auto-updates
+//            self.categories.append(newCategory)
+            
+            self.save(category: newCategory)
         }
         
         alert.addAction(action)
@@ -49,7 +58,13 @@ class CategoryTableViewController: UITableViewController {
     
     func setupNavBar() {
         
-        self.navigationController?.navigationBar.prefersLargeTitles = true
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navigation controller does not exist.")
+        }
+        
+        navBar.prefersLargeTitles = true
+        
+        navBar.tintColor = .white
         
         let appearance = UINavigationBarAppearance()
         appearance.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
@@ -60,14 +75,17 @@ class CategoryTableViewController: UITableViewController {
     }
     
     func deleteCategory(category: Category) {
-        context.delete(category)
-        saveCategories()
+        //context.delete(category)
+        //saveCategories()
     }
     
-    func saveCategories() {
+    func save(category: Category) {
         
         do{
-            try context.save()
+            //try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         } catch {
             print("Error saving category: \(error)")
         }
@@ -77,14 +95,18 @@ class CategoryTableViewController: UITableViewController {
     
     func loadCategories() {
         
-        let request : NSFetchRequest<Category> = Category.fetchRequest()
+//        let request : NSFetchRequest<Category> = Category.fetchRequest()
+//        
+//        do {
+//            categories = try context.fetch(request)
+//        } catch {
+//            print("Error fetching categories from context: \(error)")
+//        }
+//
         
-        do {
-            categories = try context.fetch(request)
-        } catch {
-            print("Error fetching categories from context: \(error)")
-        }
-
+        //let categories = realm.objects(Category.self)
+        categories = realm.objects(Category.self)
+        
         tableView.reloadData()
     }
 
@@ -95,15 +117,25 @@ class CategoryTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories.count
+        return categories?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
         if editingStyle == .delete {
-            deleteCategory(category: categories[indexPath.row])
+            //deleteCategory(category: categories[indexPath.row])
             
-            categories.remove(at: indexPath.row)
+            //categories.remove(at: indexPath.row)
+            
+            if let category = categories?[indexPath.row] {
+                do {
+                    try realm.write {
+                        realm.delete(category)
+                    }
+                } catch {
+                    print("Error deleting category: \(error)")
+                }
+            }
             
             self.tableView.reloadData()
         }
@@ -113,9 +145,9 @@ class CategoryTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
 
-        let category = categories[indexPath.row]
+        //let category = categories[indexPath.row]
         
-        cell.textLabel?.text = category.title ?? "New Category"
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
 
         return cell
     }
@@ -130,7 +162,7 @@ class CategoryTableViewController: UITableViewController {
         let destination = segue.destination as! ToDoListTableViewController
         
         if let indexPath = tableView.indexPathForSelectedRow {
-            destination.selectedCategory = categories[indexPath.row]
+            destination.selectedCategory = categories?[indexPath.row]
         }
     }
 

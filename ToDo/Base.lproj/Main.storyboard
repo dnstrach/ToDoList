@@ -40,7 +40,6 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="To Do List" id="jfX-uU-72V">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="Kf8-Qc-w7e">
-                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <connections>
                                 <action selector="addButtonPressed:" destination="iIC-p4-9Qi" id="wC6-fb-u57"/>
                             </connections>
@@ -94,7 +93,6 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="Categories" id="nKn-6l-4xx">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="JXl-ju-YpH">
-                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <connections>
                                 <action selector="addCategoryButtonTapped:" destination="0JW-V8-jiJ" id="Rja-dC-lmf"/>
                             </connections>
